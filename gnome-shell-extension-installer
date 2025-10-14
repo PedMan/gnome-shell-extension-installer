@@ -53,6 +53,13 @@ extract_extension() {
   echo "[$1] Extracting extension"
   unzip -qq -o "$TMP_DIR/shell-$SELECTED_VERSION-extension-install.$3.zip" -d "$EXTENSIONS_PATH/$2"
   rm -f "$TMP_DIR/shell-$SELECTED_VERSION-extension-install.$3.zip"
+  
+  # Apply permissions if installing system-wide
+  if [[ "$EXTENSIONS_PATH" == "/usr/share/gnome-shell/extensions" ]]; then
+    chown -R :users "$EXTENSIONS_PATH/$2"
+    chmod -R 774 "$EXTENSIONS_PATH/$2"
+  fi
+
   return $CODE
 }
 
