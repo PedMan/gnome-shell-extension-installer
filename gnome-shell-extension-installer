@@ -601,7 +601,7 @@ fi
 if [[ ${#INSTALLED[@]} -gt 0 ]] || [[ ${#UPDATED[@]} -gt 0 ]]; then
   if [[ $RESTART == 1 ]]; then
     restart_shell
-  elif [[ -n ${SEARCH_STRING+ } ]] && [[ "$XDG_SESSION_TYPE" != "wayland" ]]; then
+  elif [[ -n ${SEARCH_STRING+ } ]] && [[ "loginctl show-session "$(loginctl | grep "$(logname)" | awk '{print $1}')" -p Type | awk -F= '{print $2}'" != "wayland" ]]; then
     echo -n "Restart GNOME Shell? (y/N) "
     read RESTART
     [[ $RESTART =~ ^(y|Y) ]] && restart_shell
