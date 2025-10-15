@@ -514,7 +514,7 @@ while [ $# -gt 0 ]; do
     UPDATE_MODE=1
     shift
   elif [ "$1" == "--restart-shell" ]; then
-    if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
+    if [[ "loginctl show-session "$(loginctl | grep "$(logname)" | awk '{print $1}')" -p Type | awk -F= '{print $2}'" == "wayland" ]]; then
       echo -e "\e[0;33mWARNING\e[0m: Restart is not available on Wayland" >&2
       RESTART=-1
     else
