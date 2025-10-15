@@ -39,12 +39,42 @@ EOF
 enable_extension() {
   if command -v gnome-extensions > /dev/null
   then
-    gnome-extensions enable "$2" &&
-    echo "[$1] Extension enabled"
+    if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
+       enable_extension_next_login "$EXTENSION_UUID"
+       echo "Extension $EXTENSION_UUID will be enabled after you log out and log back in."
+    else
+       gnome-extensions enable "$2" &&
+       echo "[$1] Extension enabled"
+   fi
   else
     EXTL_OUTPUT=$( gnome-shell-extension-tool --enable-extension="$2" 2>&1 )
     sed -n "s/^'.*' is\( now\)\?\(.*\)\.$/[$1] Extension\2/p" <<< "$EXTL_OUTPUT"
   fi
+}
+
+enable_extension_next_login() {
+    local uuid="$1"
+    local current new
+
+    # Read the current enabled extensions list
+    current=$(gsettings get org.gnome.shell enabled-extensions)
+
+    # Handle the empty list case: @as [] or []
+    if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
+        new="['$uuid']"
+    else
+        # Only append if not already present
+        if [[ $current != *"$uuid"* ]]; then
+            # Insert before the closing bracket
+            new=$(echo "$current" | sed "s/]$/, '$uuid']/")
+        else
+            echo "Extension $uuid already in enabled list."
+            return 0
+        fi
+    fi
+
+    # Apply the updated list
+    gsettings set org.gnome.shell enabled-extensions "$new"
 }
 
 extract_extension() {
