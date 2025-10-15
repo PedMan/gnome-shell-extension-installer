@@ -53,6 +53,12 @@ extract_extension() {
   echo "[$1] Extracting extension"
   unzip -qq -o "$TMP_DIR/shell-$SELECTED_VERSION-extension-install.$3.zip" -d "$EXTENSIONS_PATH/$2"
   rm -f "$TMP_DIR/shell-$SELECTED_VERSION-extension-install.$3.zip"
+
+  # Compile schemas if present
+  if [[ -d "$EXTENSIONS_PATH/$2/schemas" ]]; then
+    echo "[$1] Compiling GSettings schemas"
+    glib-compile-schemas "$EXTENSIONS_PATH/$2/schemas"
+  fi
   
   # Apply permissions if installing system-wide
   if [[ "$EXTENSIONS_PATH" == "/usr/share/gnome-shell/extensions" ]]; then
