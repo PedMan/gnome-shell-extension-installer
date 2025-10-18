@@ -41,9 +41,10 @@ enable_extension() {
   then
     if [[ "$EXTENSIONS_PATH" == "/usr/share/gnome-shell/extensions" ]]; then
        enable_extension_all_users "$EXTENSION_UUID"
+	   enable_extension_current_user "$EXTENSION_UUID"
        echo "Extension $EXTENSION_UUID enabled system-wide (effective after next login)."
     elif [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
-       enable_extension_next_login "$EXTENSION_UUID"
+       eenable_extension_current_user "$EXTENSION_UUID"
        echo "Extension $EXTENSION_UUID will be enabled after you log out and log back in."
     else
        gnome-extensions enable "$2" &&
@@ -57,7 +58,6 @@ enable_extension() {
 enable_extension_all_users() {
    # Enable system-wide via dconf
    CONF_FILE="/etc/dconf/db/local.d/00-extensions"
-   UUID="$EXTENSION_UUID"
    
    mkdir -p "$(dirname "$CONF_FILE")"
    
@@ -67,11 +67,11 @@ enable_extension_all_users() {
    
       # If empty, initialize
       if [[ -z "$current" ]]; then
-         new="['$UUID']"
+         new="['$EXTENSION_UUID']"
       else
          # Only append if not already present
-         if [[ $current != *"$UUID"* ]]; then
-            new=$(echo "$current" | sed "s/]$/, '$UUID']/")
+         if [[ $current != *"$EXTENSION_UUID"* ]]; then
+            new=$(echo "$current" | sed "s/]$/, '$EXTENSION_UUID']/")
          else
             new="$current"
          fi
@@ -82,18 +82,18 @@ enable_extension_all_users() {
          echo "[org/gnome/shell]"
          echo "enabled-extensions=$new"
       } > "$CONF_FILE"
- else
+   else
       cat > "$CONF_FILE" <<EOF
 [org/gnome/shell]
-enabled-extensions=['$UUID']
+enabled-extensions=['$EXTENSION_UUID']
 EOF
    fi
-
+   
    # Rebuild system dconf database
    dconf update
 }
 
-enable_extension_next_login() {
+enable_extension_current_user() {
     local uuid="$1"
     local current new
 
@@ -102,14 +102,14 @@ enable_extension_next_login() {
 
     # Handle the empty list case: @as [] or []
     if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
-        new="['$uuid']"
+        new="['$EXTENSION_UUID']"
     else
         # Only append if not already present
-        if [[ $current != *"$uuid"* ]]; then
+        if [[ $current != *"$EXTENSION_UUID"* ]]; then
             # Insert before the closing bracket
-            new=$(echo "$current" | sed "s/]$/, '$uuid']/")
+            new=$(echo "$current" | sed "s/]$/, '$EXTENSION_UUID']/")
         else
-            echo "Extension $uuid already in enabled list."
+            echo "Extension $EXTENSION_UUID already in enabled list."
             return 0
         fi
     fi
@@ -683,6 +683,6 @@ if [[ ${#INSTALLED[@]} -gt 0 ]] || [[ ${#UPDATED[@]} -gt 0 ]]; then
     read RESTART
     [[ $RESTART =~ ^(y|Y) ]] && restart_shell
   else
-    echo "You may have to restart GNOME Shell."
+    echo "You may have to restart GNOME Shell or log out and log back in.."
   fi
 fi
