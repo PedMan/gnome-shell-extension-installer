@@ -41,10 +41,9 @@ enable_extension() {
   then
     if [[ "$EXTENSIONS_PATH" == "/usr/share/gnome-shell/extensions" ]]; then
        enable_extension_all_users "$EXTENSION_UUID"
-	   enable_extension_current_user "$EXTENSION_UUID"
-       echo "Extension $EXTENSION_UUID enabled system-wide (effective after next login)."
+       echo "Extension $EXTENSION_UUID enabled system-wide (effective only for new users)."
     elif [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
-       eenable_extension_current_user "$EXTENSION_UUID"
+       enable_extension_current_user "$EXTENSION_UUID"
        echo "Extension $EXTENSION_UUID will be enabled after you log out and log back in."
     else
        gnome-extensions enable "$2" &&
@@ -56,8 +55,9 @@ enable_extension() {
   fi
 }
 enable_extension_all_users() {
-   # Enable system-wide via dconf
+   # Enable system-wide via dconf for new users
    CONF_FILE="/etc/dconf/db/local.d/00-extensions"
+   LOCK_FILE="/etc/dconf/db/local.d/locks/extensions"
    
    mkdir -p "$(dirname "$CONF_FILE")"
    
@@ -94,6 +94,7 @@ EOF
 }
 
 enable_extension_current_user() {
+	# Enable current user via dconf
     local uuid="$1"
     local current new
 
