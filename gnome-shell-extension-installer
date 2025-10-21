@@ -683,6 +683,6 @@ if [[ ${#INSTALLED[@]} -gt 0 ]] || [[ ${#UPDATED[@]} -gt 0 ]]; then
     read RESTART
     [[ $RESTART =~ ^(y|Y) ]] && restart_shell
   else
-    echo "You may have to restart GNOME Shell or log out and log back in.."
+    echo "You have to restart GNOME Shell or log out and log back in.."
   fi
 fi
