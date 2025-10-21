@@ -95,20 +95,19 @@ EOF
 
 enable_extension_current_user() {
 	# Enable current user via dconf
-    local uuid="$1"
-    local current new
+    local CURRENT_SETTINGS NEW_SETTINGS
 
     # Read the current enabled extensions list
-    current=$(gsettings get org.gnome.shell enabled-extensions)
+    CURRENT_SETTINGS=$(gsettings get org.gnome.shell enabled-extensions)
 
     # Handle the empty list case: @as [] or []
-    if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
-        new="['$EXTENSION_UUID']"
+    if [[ "$CURRENT_SETTINGS" == "@as []" || "$CURRENT_SETTINGS" == "[]" ]]; then
+        NEW_SETTINGS="['$EXTENSION_UUID']"
     else
         # Only append if not already present
-        if [[ $current != *"$EXTENSION_UUID"* ]]; then
+        if [[ $CURRENT_SETTINGS != *"$EXTENSION_UUID"* ]]; then
             # Insert before the closing bracket
-            new=$(echo "$current" | sed "s/]$/, '$EXTENSION_UUID']/")
+            NEW_SETTINGS=$(echo "$CURRENT_SETTINGS" | sed "s/]$/, '$EXTENSION_UUID']/")
         else
             echo "Extension $EXTENSION_UUID already in enabled list."
             return 0
@@ -116,7 +115,7 @@ enable_extension_current_user() {
     fi
 
     # Apply the updated list
-    gsettings set org.gnome.shell enabled-extensions "$new"
+    gsettings set org.gnome.shell enabled-extensions "$NEW_SETTINGS"
 }
 
 extract_extension() {
